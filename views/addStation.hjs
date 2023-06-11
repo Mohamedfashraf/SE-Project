@@ -1,0 +1,153 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <title>Add Station</title>
+    <link rel="stylesheet" href="/styles/bootstrap.min.css" />
+    <link rel="stylesheet" href="/styles/style.css" />
+    <link
+      rel="stylesheet"
+      href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css"
+    />
+    <link rel="stylesheet" href="/styles/custom-style.css" />
+    <script src="/js/jquery-2.2.0.min.js" type="text/javascript"></script>
+    <script src="/js/bootstrap.min.js" type="text/javascript"></script>
+    <style>
+      /* Add any additional custom styles here */
+    </style>
+  </head>
+  <body>
+    <div class="container" style="margin-top: 20px"></div>
+    <div class="container">
+      <div>
+        <nav class="navbar navbar-inverse">
+          <div class="container-fluid">
+            <div class="navbar-header">
+              <a class="navbar-brand" href="/dashboard">Dashboard</a>
+            </div>
+            <ul class="nav navbar-nav">
+              <li class="active">
+                <a href="/dashboard">
+                  <i class="fas fa-home"></i>
+                  Home
+                </a>
+              </li>
+              <li>
+                <a href="/stations">
+                  <i class="fas fa-subway"></i>
+                  Stations
+                </a>
+              </li>
+              <li>
+                <a href="/routes">
+                  <i class="fas fa-route"></i>
+                  Routes
+                </a>
+              </li>
+              <li class="dropdown">
+                <a
+                  href="#"
+                  class="dropdown-toggle"
+                  data-toggle="dropdown"
+                  role="button"
+                  aria-haspopup="true"
+                  aria-expanded="false"
+                >
+                  <i class="fas fa-shopping-cart"></i>
+                  Shop
+                  <span class="caret"></span>
+                </a>
+                <ul class="dropdown-menu">
+                  <li>
+                    <a href="/checkPrice">
+                      <i class="fas fa-calculator"></i>
+                      Check Price
+                    </a>
+                  </li>
+                  <li>
+                    <a href="/tickets">
+                      <i class="fas fa-ticket-alt"></i>
+                      Tickets
+                    </a>
+                  </li>
+                  <li>
+                    <a href="/subscriptions">
+                      <i class="fas fa-calendar-alt"></i>
+                      Subscriptions
+                    </a>
+                  </li>
+                  <li>
+                    <a href="/buyTicketsBySubscription">
+                      <i class="fas fa-money-check"></i>
+                      Buy Tickets by Subscription
+                    </a>
+                  </li>
+                </ul>
+              </li>
+            </ul>
+            <ul class="nav navbar-nav navbar-right">
+              <li>
+                <a href="/">
+                  <i class="fas fa-sign-out-alt"></i>
+                  Logout
+                </a>
+              </li>
+            </ul>
+          </div>
+        </nav>
+      </div>
+
+      <div class="row">
+        <div class="col-md-6 col-md-offset-3">
+          <h2>Create Station</h2>
+          <form id="stationForm">
+            <div class="form-group">
+              <label for="stationName">Station Name:</label>
+              <input
+                type="text"
+                class="form-control"
+                id="stationName"
+                name="stationName"
+                required
+              />
+            </div>
+            <button type="submit" class="btn btn-primary">Create</button>
+          </form>
+        </div>
+      </div>
+    </div>
+
+    <script>
+      $(document).ready(function () {
+        // Handle form submission
+        $("#stationForm").submit(function (event) {
+          event.preventDefault();
+          // Get form data
+          var stationName = $("#stationName").val();
+          // Create station object
+          var station = {
+            stationName: stationName,
+          };
+          // Send AJAX request
+          $.ajax({
+            url: "/api/v1/station",
+            method: "POST",
+            data: JSON.stringify(station),
+            contentType: "application/json",
+            success: function (response) {
+              // Handle success response
+              console.log("Station created:", response);
+              alert("Station created successfully");
+              // Clear form input
+              $("#stationName").val("");
+            },
+            error: function (error) {
+              // Handle error response
+              console.log("Error creating station:", error);
+              alert("Error creating station");
+            },
+          });
+        });
+      });
+    </script>
+  </body>
+</html>

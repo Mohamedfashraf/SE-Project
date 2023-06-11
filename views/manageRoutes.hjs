@@ -1,0 +1,231 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <title>Manage Routes</title>
+    <link rel="stylesheet" href="/styles/bootstrap.min.css" />
+    <link rel="stylesheet" href="/styles/style.css" />
+    <link
+      rel="stylesheet"
+      href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css"
+    />
+    <link rel="stylesheet" href="/styles/custom-style.css" />
+    <script src="/js/jquery-2.2.0.min.js" type="text/javascript"></script>
+    <script src="/js/bootstrap.min.js" type="text/javascript"></script>
+    <style>
+      .welcome-message {
+        font-size: 20px;
+        font-weight: bold;
+        color: #333;
+        margin-top: 20px;
+      }
+      #user-name {
+        color: #007bff;
+      }
+      #user-table {
+        margin-top: 20px;
+      }
+      .user-info-card {
+        background-color: #f7f7f7;
+        border-radius: 4px;
+        padding: 20px;
+        box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+        margin-top: 20px;
+      }
+      .user-info-header {
+        font-size: 24px;
+        font-weight: bold;
+        color: #333;
+        margin-bottom: 10px;
+      }
+      .user-info-item {
+        margin-bottom: 10px;
+      }
+      .user-info-icon {
+        margin-right: 10px;
+        color: #007bff;
+      }
+      .route-buttons {
+        margin-top: 20px;
+      }
+    </style>
+  </head>
+  <body>
+    <script>
+      $(document).ready(function () {
+        const sessionToken = document.cookie.includes("session_token");
+        if (!sessionToken) {
+          location.href = "/";
+        }
+
+        // Fetch user data from backend
+        $.ajax({
+          type: "GET",
+          url: "/api/v1/getUser",
+          success: function (response) {
+            populateUserTable(response);
+            if (response.roleid !== 2) {
+              removeAdminOptions();
+            }
+          },
+          error: function (xhr) {
+            console.log(xhr.responseText);
+          },
+        });
+
+        // Function to populate the user table
+        function populateUserTable(user) {
+          var userCard = $("#user-card");
+          var userHeader = $("<h2>")
+            .addClass("user-info-header")
+            .text("User Information");
+          userCard.append(userHeader);
+
+          var userFirstName = $("<div>").addClass("user-info-item");
+          userFirstName.append($("<i>").addClass("fas fa-user user-info-icon"));
+          userFirstName.append(
+            $("<span>").text("First Name: " + user.firstname)
+          );
+          userCard.append(userFirstName);
+
+          var userLastName = $("<div>").addClass("user-info-item");
+          userLastName.append($("<i>").addClass("fas fa-user user-info-icon"));
+          userLastName.append($("<span>").text("Last Name: " + user.lastname));
+          userCard.append(userLastName);
+
+          var userRole = $("<div>").addClass("user-info-item");
+          userRole.append($("<i>").addClass("fas fa-user-tag user-info-icon"));
+          userRole.append(
+            $("<span>").text("Role: " + getRoleName(user.roleid))
+          );
+          userCard.append(userRole);
+
+          var userEmail = $("<div>").addClass("user-info-item");
+          userEmail.append($("<i>").addClass("fas fa-envelope user-info-icon"));
+          userEmail.append($("<span>").text("Email: " + user.email));
+          userCard.append(userEmail);
+
+          // Update the welcome message with the user's first name
+          var firstName = user.firstname;
+          $("#user-name").text(firstName);
+        }
+
+        // Function to get the role name based on the role ID
+        function getRoleName(roleId) {
+          if (roleId === 1) {
+            return "User";
+          } else if (roleId === 2) {
+            return "Admin";
+          } else if (roleId === 3) {
+            return "Senior";
+          } else {
+            return "Unknown";
+          }
+        }
+
+        // Function to remove the admin options from the navigation menu
+        function removeAdminOptions() {
+          $(".admin-options").hide();
+        }
+      });
+    </script>
+
+    <div class="container" style="margin-top: 20px">
+      <div>
+        <nav class="navbar navbar-inverse">
+          <div class="container-fluid">
+            <div class="navbar-header">
+              <a class="navbar-brand" href="/dashboard">Dashboard</a>
+            </div>
+            <ul class="nav navbar-nav">
+              <li class="active">
+                <a href="/dashboard">
+                  <i class="fas fa-home"></i>
+                  Home
+                </a>
+              </li>
+              <li>
+                <a href="/stations">
+                  <i class="fas fa-subway"></i>
+                  Stations
+                </a>
+              </li>
+              <li>
+                <a href="/routes">
+                  <i class="fas fa-route"></i>
+                  Routes
+                </a>
+              </li>
+              <li class="dropdown">
+                <a
+                  href="#"
+                  class="dropdown-toggle"
+                  data-toggle="dropdown"
+                  role="button"
+                  aria-haspopup="true"
+                  aria-expanded="false"
+                >
+                  <i class="fas fa-shopping-cart"></i>
+                  Shop
+                  <span class="caret"></span>
+                </a>
+                <ul class="dropdown-menu">
+                  <li>
+                    <a href="/checkPrice">
+                      <i class="fas fa-calculator"></i>
+                      Check Price
+                    </a>
+                  </li>
+                  <li>
+                    <a href="/tickets">
+                      <i class="fas fa-ticket-alt"></i>
+                      Tickets
+                    </a>
+                  </li>
+                  <li>
+                    <a href="/subscriptions">
+                      <i class="fas fa-calendar-alt"></i>
+                      Subscriptions
+                    </a>
+                  </li>
+                  <li>
+                    <a href="/buyTicketsBySubscription">
+                      <i class="fas fa-money-check"></i>
+                      Buy Tickets by Subscription
+                    </a>
+                  </li>
+                </ul>
+              </li>
+            </ul>
+            <ul class="nav navbar-nav navbar-right">
+              <li>
+                <a href="/">
+                  <i class="fas fa-sign-out-alt"></i>
+                  Logout
+                </a>
+              </li>
+            </ul>
+          </div>
+        </nav>
+      </div>
+
+      <div class="row">
+        <div class="col-md-8 col-md-offset-2">
+          <h1 class="welcome-message">
+            Welcome, <span id="user-name"></span>!
+          </h1>
+          <div class="user-info-card" id="user-card"></div>
+
+          <div class="route-buttons">
+            <a class="btn btn-primary btn-block" href="/addRoute">Add Route</a>
+            <a class="btn btn-primary btn-block" href="/updateRoutes"
+              >Update Routes</a
+            >
+            <a class="btn btn-primary btn-block" href="/deleteRoutes"
+              >Delete Routes</a
+            >
+          </div>
+        </div>
+      </div>
+    </div>
+  </body>
+</html>

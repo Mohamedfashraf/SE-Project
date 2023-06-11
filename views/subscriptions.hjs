@@ -1,0 +1,204 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <title>Subscriptions</title>
+    <link rel="stylesheet" href="/styles/bootstrap.min.css" />
+    <link rel="stylesheet" href="/styles/style.css" />
+    <link
+      rel="stylesheet"
+      href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css"
+    />
+    <style>
+      body {
+        padding-top: 20px;
+      }
+
+      h2 {
+        margin-top: 30px;
+      }
+
+      #result {
+        margin-top: 20px;
+      }
+    </style>
+  </head>
+  <body>
+    <div class="container">
+      <nav class="navbar navbar-inverse">
+        <div class="container-fluid">
+          <div class="navbar-header">
+            <a class="navbar-brand" href="/dashboard">Dashboard</a>
+          </div>
+          <ul class="nav navbar-nav">
+            <li class="active">
+              <a href="/dashboard">
+                <i class="fas fa-home"></i>
+                Home
+              </a>
+            </li>
+            <li>
+              <a href="/stations">
+                <i class="fas fa-subway"></i>
+                Stations
+              </a>
+            </li>
+            <li>
+              <a href="/routes">
+                <i class="fas fa-route"></i>
+                Routes
+              </a>
+            </li>
+            <li class="dropdown">
+              <a
+                href="#"
+                class="dropdown-toggle"
+                data-toggle="dropdown"
+                role="button"
+                aria-haspopup="true"
+                aria-expanded="false"
+              >
+                <i class="fas fa-shopping-cart"></i>
+                Shop
+                <span class="caret"></span>
+              </a>
+              <ul class="dropdown-menu">
+                <li>
+                  <a href="/checkPrice">
+                    <i class="fas fa-calculator"></i>
+                    Check Price
+                  </a>
+                </li>
+                <li>
+                  <a href="/tickets">
+                    <i class="fas fa-ticket-alt"></i>
+                    Tickets
+                  </a>
+                </li>
+                <li>
+                  <a href="/subscriptions">
+                    <i class="fas fa-calendar-alt"></i>
+                    Subscriptions
+                  </a>
+                </li>
+                <li>
+                  <a href="/buyTicketsBySubscription">
+                    <i class="fas fa-money-check"></i>
+                    Buy Tickets by Subscription
+                  </a>
+                </li>
+              </ul>
+            </li>
+          </ul>
+          <ul class="nav navbar-nav navbar-right">
+            <li>
+              <a href="/">
+                <i class="fas fa-sign-out-alt"></i>
+                Logout
+              </a>
+            </li>
+          </ul>
+        </div>
+      </nav>
+
+      <h2>Buy Subscription</h2>
+
+      <form id="subscriptionForm">
+        <div class="form-group">
+          <label for="creditCardNumber">Credit Card Number</label>
+          <input
+            type="text"
+            class="form-control"
+            id="creditCardNumber"
+            placeholder="Credit Card Number"
+          />
+        </div>
+        <div class="form-group">
+          <label for="holderName">Holder Name</label>
+          <input
+            type="text"
+            class="form-control"
+            id="holderName"
+            placeholder="Holder Name"
+          />
+        </div>
+        <div class="form-group">
+          <label for="payedAmount">Payed Amount</label>
+          <input
+            type="text"
+            class="form-control"
+            id="payedAmount"
+            placeholder="Payed Amount"
+          />
+        </div>
+        <div class="form-group">
+          <label for="subType">Subscription Type</label>
+          <select class="form-control" id="subType">
+            <option value="annual">Annual 100/50 (senior) EGP</option>
+            <option value="quarterly">Quarterly 50/25 (senior) EGP</option>
+            <option value="monthly">Monthly 20/10 (senior) EGP</option>
+          </select>
+        </div>
+        <div class="form-group">
+          <label for="zoneId">Zone ID</label>
+          <select class="form-control" id="zoneId">
+            <option value="">Select Zone</option>
+          </select>
+        </div>
+
+        <button type="submit" class="btn btn-primary">Buy Subscription</button>
+      </form>
+
+      <div id="result"></div>
+    </div>
+
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.6.0/jquery.min.js"></script>
+    <script src="/scripts/bootstrap.min.js"></script>
+    <script>
+      $(document).ready(function () {
+        $.ajax({
+          type: "GET",
+          url: "/api/v1/zones",
+          success: function (response) {
+            response.forEach(function (zone) {
+              $("#zoneId").append(
+                $("<option>", {
+                  value: zone.id,
+                  text: zone.zonetype + " " + zone.price + " EGP",
+                })
+              );
+            });
+          },
+          error: function (error) {
+            console.log("Error fetching zones: " + error);
+          },
+        });
+
+        $("#subscriptionForm").submit(function (event) {
+          event.preventDefault();
+
+          var formData = {
+            creditCardNumber: $("#creditCardNumber").val(),
+            holderName: $("#holderName").val(),
+            payedAmount: $("#payedAmount").val(),
+            subType: $("#subType").val(),
+            zoneId: $("#zoneId").val(),
+          };
+
+          $.ajax({
+            type: "POST",
+            url: "/api/v1/payment/subscription",
+            data: formData,
+            success: function (response) {
+              $("#result").html("<p>" + response.message + "</p>");
+            },
+            error: function (error) {
+              $("#result").html(
+                "<p>Error: " + error.responseJSON.error + "</p>"
+              );
+            },
+          });
+        });
+      });
+    </script>
+  </body>
+</html>

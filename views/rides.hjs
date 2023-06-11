@@ -1,0 +1,244 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <title>Rides</title>
+    <link rel="stylesheet" href="/styles/bootstrap.min.css" />
+    <link rel="stylesheet" href="/styles/style.css" />
+    <link
+      rel="stylesheet"
+      href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css"
+    />
+    <link rel="stylesheet" href="/styles/custom-style.css" />
+    <script src="/js/jquery-2.2.0.min.js" type="text/javascript"></script>
+    <script src="/js/bootstrap.min.js" type="text/javascript"></script>
+    <style>
+      /* Add custom styles for the rides table here */
+      #rides-table {
+        margin-top: 20px;
+      }
+
+      #rides-table th,
+      #rides-table td {
+        vertical-align: middle;
+      }
+
+      .selected {
+        background-color: #f2f2f2;
+      }
+    </style>
+    <script>
+      $(document).ready(function () {
+        // Highlight selected row
+        $("#rides-table tbody").on("click", "tr", function () {
+          // Remove highlighting from previously selected rows
+          $("#rides-table tbody tr").removeClass("selected");
+          // Add highlighting to the selected row
+          $(this).addClass("selected");
+
+          // Retrieve the data from the selected row
+          var rideId = $(this).find("td:first").text();
+          var origin = $(this).find("td:nth-child(3)").text();
+          var destination = $(this).find("td:nth-child(4)").text();
+          var tripDate = $(this).find("td:nth-child(7)").text();
+
+          // Format the date as "YYYY-MM-DD"
+          var formattedDate = new Date(tripDate)
+            .toISOString()
+            .split("T")[0]
+            .replace(/\//g, "-");
+
+          // Update the input fields with the selected ride's details
+          $("#origin").val(origin);
+          $("#destination").val(destination);
+          $("#trip-date").val(formattedDate);
+        });
+
+        // Simulate ride action
+        function simulateRide(origin, destination, tripDate) {
+          var tripTime = "00:00:00";
+          var formattedTripDate = tripDate + "T" + tripTime;
+          $.ajax({
+            url: "/api/v1/ride/simulate",
+            type: "PUT",
+            data: {
+              origin: origin,
+              destination: destination,
+              tripDate: formattedTripDate,
+            },
+            success: function (response) {
+              alert(response);
+              // Refresh the rides table after successful simulation
+              refreshRidesTable();
+            },
+            error: function () {
+              alert("Error simulating ride");
+            },
+          });
+        }
+
+        // Retrieve and display rides
+        function getRides() {
+          $.ajax({
+            url: "/api/v1/ridesUser",
+            type: "GET",
+            success: function (rides) {
+              var ridesTable = $("#rides-table");
+              var tbody = ridesTable.find("tbody");
+
+              // Clear the existing table rows
+              tbody.empty();
+
+              rides.forEach(function (ride) {
+                var row = $("<tr>");
+
+                row.append($("<td>").text(ride.id));
+                row.append($("<td>").text(ride.status));
+                row.append($("<td>").text(ride.origin));
+                row.append($("<td>").text(ride.destination));
+                row.append($("<td>").text(ride.userid));
+                row.append($("<td>").text(ride.ticketid));
+                row.append($("<td>").text(ride.tripdate));
+
+                tbody.append(row);
+              });
+            },
+            error: function () {
+              alert("Error retrieving rides");
+            },
+          });
+        }
+
+        // Function to refresh the rides table
+        function refreshRidesTable() {
+          getRides();
+        }
+
+        // Initial load of rides table
+        getRides();
+
+        // Handle click event for simulate ride button
+        $("#simulate-ride").click(function () {
+          var origin = $("#origin").val();
+          var destination = $("#destination").val();
+          var tripDate = $("#trip-date").val();
+
+          simulateRide(origin, destination, tripDate);
+        });
+      });
+    </script>
+  </head>
+  <body>
+    <div class="container" style="margin-top: 20px"></div>
+    <div class="container">
+      <nav class="navbar navbar-inverse">
+        <div class="container-fluid">
+          <div class="navbar-header">
+            <a class="navbar-brand" href="/dashboard">Dashboard</a>
+          </div>
+          <ul class="nav navbar-nav">
+            <li class="active">
+              <a href="/dashboard">
+                <i class="fas fa-home"></i>
+                Home
+              </a>
+            </li>
+            <li>
+              <a href="/stations">
+                <i class="fas fa-subway"></i>
+                Stations
+              </a>
+            </li>
+            <li>
+              <a href="/routes">
+                <i class="fas fa-route"></i>
+                Routes
+              </a>
+            </li>
+            <li class="dropdown">
+              <a
+                href="#"
+                class="dropdown-toggle"
+                data-toggle="dropdown"
+                role="button"
+                aria-haspopup="true"
+                aria-expanded="false"
+              >
+                <i class="fas fa-shopping-cart"></i>
+                Shop
+                <span class="caret"></span>
+              </a>
+              <ul class="dropdown-menu">
+                <li>
+                  <a href="/checkPrice">
+                    <i class="fas fa-calculator"></i>
+                    Check Price
+                  </a>
+                </li>
+                <li>
+                  <a href="/tickets">
+                    <i class="fas fa-ticket-alt"></i>
+                    Tickets
+                  </a>
+                </li>
+                <li>
+                  <a href="/subscriptions">
+                    <i class="fas fa-calendar-alt"></i>
+                    Subscriptions
+                  </a>
+                </li>
+                <li>
+                  <a href="/buyTicketsBySubscription">
+                    <i class="fas fa-money-check"></i>
+                    Buy Tickets by Subscription
+                  </a>
+                </li>
+              </ul>
+            </li>
+          </ul>
+          <ul class="nav navbar-nav navbar-right">
+            <li>
+              <a href="/">
+                <i class="fas fa-sign-out-alt"></i>
+                Logout
+              </a>
+            </li>
+          </ul>
+        </div>
+      </nav>
+      <h1>Rides</h1>
+      <table id="rides-table" class="table table-striped">
+        <thead>
+          <tr>
+            <th>ID</th>
+            <th>Status</th>
+            <th>Origin</th>
+            <th>Destination</th>
+            <th>User ID</th>
+            <th>Ticket ID</th>
+            <th>Trip Date</th>
+          </tr>
+        </thead>
+        <tbody></tbody>
+      </table>
+      <h2>Simulate Ride</h2>
+      <div class="form-group">
+        <label for="origin">Origin:</label>
+        <input type="text" class="form-control" id="origin" />
+      </div>
+      <div class="form-group">
+        <label for="destination">Destination:</label>
+        <input type="text" class="form-control" id="destination" />
+      </div>
+      <div class="form-group">
+        <label for="trip-date">Trip Date:</label>
+        <input
+          type="text"
+          class="form-control"
+          id="trip-date"
+          placeholder="YYYY-MM-DD"
+        />
+      </div>
+      <button id="simulate-ride" class="btn btn-primary">Simulate Ride</button>
+    </div>
+  </body>
+</html>

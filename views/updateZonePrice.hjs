@@ -1,0 +1,188 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <title>zone update</title>
+    <link rel="stylesheet" href="/styles/bootstrap.min.css" />
+    <link rel="stylesheet" href="/styles/style.css" />
+    <link
+      rel="stylesheet"
+      href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css"
+    />
+    <link rel="stylesheet" href="/styles/custom-style.css" />
+    <script src="/js/jquery-2.2.0.min.js" type="text/javascript"></script>
+    <script src="/js/bootstrap.min.js" type="text/javascript"></script>
+    <style>
+      .message-container {
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100%;
+        z-index: 9999;
+      }
+
+      .message-alert {
+        margin-bottom: 0;
+      }
+    </style>
+  </head>
+  <body>
+    <div class="message-container"></div>
+    <div class="container" style="margin-top: 20px"></div>
+    <div class="container">
+      <nav class="navbar navbar-inverse">
+        <div class="container-fluid">
+          <div class="navbar-header">
+            <a class="navbar-brand" href="/dashboard">Dashboard</a>
+          </div>
+          <ul class="nav navbar-nav">
+            <li class="active">
+              <a href="/dashboard">
+                <i class="fas fa-home"></i>
+                Home
+              </a>
+            </li>
+            <li>
+              <a href="/stations">
+                <i class="fas fa-subway"></i>
+                Stations
+              </a>
+            </li>
+            <li>
+              <a href="/routes">
+                <i class="fas fa-route"></i>
+                Routes
+              </a>
+            </li>
+            <li class="dropdown">
+              <a
+                href="#"
+                class="dropdown-toggle"
+                data-toggle="dropdown"
+                role="button"
+                aria-haspopup="true"
+                aria-expanded="false"
+              >
+                <i class="fas fa-shopping-cart"></i>
+                Shop
+                <span class="caret"></span>
+              </a>
+              <ul class="dropdown-menu">
+                <li>
+                  <a href="/checkPrice">
+                    <i class="fas fa-calculator"></i>
+                    Check Price
+                  </a>
+                </li>
+                <li>
+                  <a href="/tickets">
+                    <i class="fas fa-ticket-alt"></i>
+                    Tickets
+                  </a>
+                </li>
+                <li>
+                  <a href="/subscriptions">
+                    <i class="fas fa-calendar-alt"></i>
+                    Subscriptions
+                  </a>
+                </li>
+                <li>
+                  <a href="/buyTicketsBySubscription">
+                    <i class="fas fa-money-check"></i>
+                    Buy Tickets by Subscription
+                  </a>
+                </li>
+              </ul>
+            </li>
+          </ul>
+          <ul class="nav navbar-nav navbar-right">
+            <li>
+              <a href="/">
+                <i class="fas fa-sign-out-alt"></i>
+                Logout
+              </a>
+            </li>
+          </ul>
+        </div>
+      </nav>
+      <h1 class="page-title">Update Zone Price</h1>
+      <form class="manage-zones-form">
+        <div class="form-group">
+          <label for="zone-id">Zone ID:</label>
+          <select class="form-control manage-zones-input" id="zone-id"></select>
+        </div>
+        <div class="form-group">
+          <label for="zone-price">New Price:</label>
+          <input
+            type="text"
+            class="form-control manage-zones-input"
+            id="zone-price"
+            placeholder="Enter the new price"
+          />
+        </div>
+        <button
+          type="button"
+          class="btn btn-primary manage-zones-button"
+          onclick="updateZonePrice()"
+        >
+          Update Zone Price
+        </button>
+      </form>
+    </div>
+    <script>
+      $(document).ready(function () {
+        $.ajax({
+          url: "/api/v1/zones",
+          method: "GET",
+          success: function (response) {
+            const zones = response;
+            const selectOptions = zones.map(function (zone) {
+              return (
+                '<option value="' +
+                zone.id +
+                '">' +
+                zone.zonetype +
+                " (Price: " +
+                zone.price +
+                ")</option>"
+              );
+            });
+            $("#zone-id").html(selectOptions.join(""));
+          },
+          error: function (error) {
+            console.error(error);
+          },
+        });
+      });
+
+      function updateZonePrice() {
+        const zoneId = $("#zone-id").val();
+        const newPrice = $("#zone-price").val();
+
+        $.ajax({
+          url: `/api/v1/zones/${zoneId}`,
+          method: "PUT",
+          data: { price: newPrice },
+          success: function (response) {
+            console.log(response.message);
+            showMessage("Zone price updated successfully.", "success");
+          },
+          error: function (error) {
+            console.error(error);
+            showMessage("Error updating zone price.", "error");
+          },
+        });
+      }
+
+      function showMessage(message, type) {
+        const messageContainer = $('<div class="message-alert">')
+          .addClass("alert alert-" + type)
+          .text(message)
+          .appendTo(".message-container");
+
+        setTimeout(function () {
+          messageContainer.remove();
+        }, 3000);
+      }
+    </script>
+  </body>
+</html>

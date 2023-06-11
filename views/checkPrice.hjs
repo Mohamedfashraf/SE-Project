@@ -1,0 +1,272 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <title>Check Price</title>
+    <link rel="stylesheet" href="/styles/bootstrap.min.css" />
+    <link rel="stylesheet" href="/styles/style.css" />
+    <link
+      rel="stylesheet"
+      href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css"
+    />
+    <style>
+      body {
+        margin: 20px;
+      }
+
+      .journey-line {
+        height: 4px;
+        background-color: #000;
+        margin-top: 20px;
+        display: none;
+        position: relative;
+      }
+
+      .journey-station {
+        position: absolute;
+        top: -25px;
+        font-weight: bold;
+      }
+
+      .form-group {
+        margin-bottom: 15px;
+      }
+
+      label {
+        font-weight: bold;
+      }
+
+      select {
+        width: 100%;
+        padding: 6px 12px;
+        font-size: 16px;
+        border-radius: 4px;
+        border: 1px solid #ccc;
+      }
+
+      .check-price-btn {
+        background-color: #007bff;
+        color: #fff;
+        border: none;
+        padding: 10px 20px;
+        font-size: 16px;
+        border-radius: 4px;
+        cursor: pointer;
+      }
+
+      .result-container {
+        margin-top: 20px;
+        font-size: 18px;
+        font-weight: bold;
+      }
+
+      .price {
+        color: #007bff;
+        font-weight: normal;
+      }
+    </style>
+    <script src="/js/jquery-2.2.0.min.js" type="text/javascript"></script>
+    <script src="/js/bootstrap.min.js" type="text/javascript"></script>
+    <script>
+      $(document).ready(function () {
+        var journeyLine = $(".journey-line");
+        var originName = "";
+        var destinationName = "";
+
+        function populateStationOptions() {
+          $.ajax({
+            url: "/api/v1/stations",
+            type: "GET",
+            success: function (response) {
+              var stations = response;
+              var originSelect = $("#originSelect");
+              var destinationSelect = $("#destinationSelect");
+
+              stations.sort(function (a, b) {
+                return a.id - b.id;
+              });
+
+              $.each(stations, function (index, station) {
+                originSelect.append(
+                  $("<option></option>")
+                    .val(station.id)
+                    .text(station.stationname)
+                );
+                destinationSelect.append(
+                  $("<option></option>")
+                    .val(station.id)
+                    .text(station.stationname)
+                );
+              });
+            },
+            error: function (error) {
+              console.log(error);
+            },
+          });
+        }
+
+        function getPrice(originId, destinationId) {
+          $.ajax({
+            url: "/api/v1/tickets/price/" + originId + "&" + destinationId,
+            type: "GET",
+            success: function (response) {
+              var result = $("#result");
+              result.html(
+                "Stations Count: " +
+                  response.stationsCount +
+                  "<br>Price: <span class='price'>" +
+                  response.price +
+                  " EGP</span>"
+              );
+
+              var stationsCount = response.stationsCount;
+              var containerWidth = $(".container").width();
+              var lineWidth = (containerWidth / 10) * stationsCount;
+
+              var originPosition =
+                $("#originSelect option:selected").index() + 1;
+              var destinationPosition =
+                $("#destinationSelect option:selected").index() + 1;
+              var startPosition = Math.min(originPosition, destinationPosition);
+              var endPosition = Math.max(originPosition, destinationPosition);
+
+              var startOffset = (startPosition - 1) * (containerWidth / 10);
+              var endOffset = (endPosition - 1) * (containerWidth / 10);
+
+              journeyLine.css({
+                width: lineWidth + "px",
+                left: startOffset + "px",
+                right: containerWidth - endOffset - lineWidth + "px",
+              });
+              journeyLine.show();
+
+              originName = $("#originSelect option:selected").text();
+              destinationName = $("#destinationSelect option:selected").text();
+              updateJourneyStations();
+            },
+            error: function (error) {
+              console.log(error);
+            },
+          });
+        }
+
+        function updateJourneyStations() {
+          var journeyStations = $(".journey-station");
+          journeyStations.remove();
+
+          var startStation = $("<div class='journey-station'></div>")
+            .text(originName)
+            .css({ left: "0px" });
+          var endStation = $("<div class='journey-station'></div>")
+            .text(destinationName)
+            .css({ right: "0px" });
+
+          journeyLine.append(startStation);
+          journeyLine.append(endStation);
+        }
+
+        populateStationOptions();
+
+        $("#checkPriceBtn").click(function () {
+          var originId = $("#originSelect").val();
+          var destinationId = $("#destinationSelect").val();
+          getPrice(originId, destinationId);
+        });
+      });
+    </script>
+  </head>
+  <body>
+    <div class="container">
+      <nav class="navbar navbar-inverse">
+        <div class="container-fluid">
+          <div class="navbar-header">
+            <a class="navbar-brand" href="/dashboard">Dashboard</a>
+          </div>
+          <ul class="nav navbar-nav">
+            <li class="active">
+              <a href="/dashboard">
+                <i class="fas fa-home"></i>
+                Home
+              </a>
+            </li>
+            <li>
+              <a href="/stations">
+                <i class="fas fa-subway"></i>
+                Stations
+              </a>
+            </li>
+            <li>
+              <a href="/routes">
+                <i class="fas fa-route"></i>
+                Routes
+              </a>
+            </li>
+            <li class="dropdown">
+              <a
+                href="#"
+                class="dropdown-toggle"
+                data-toggle="dropdown"
+                role="button"
+                aria-haspopup="true"
+                aria-expanded="false"
+              >
+                <i class="fas fa-shopping-cart"></i>
+                Shop
+                <span class="caret"></span>
+              </a>
+              <ul class="dropdown-menu">
+                <li>
+                  <a href="/checkPrice">
+                    <i class="fas fa-calculator"></i>
+                    Check Price
+                  </a>
+                </li>
+                <li>
+                  <a href="/tickets">
+                    <i class="fas fa-ticket-alt"></i>
+                    Tickets
+                  </a>
+                </li>
+                <li>
+                  <a href="/subscriptions">
+                    <i class="fas fa-calendar-alt"></i>
+                    Subscriptions
+                  </a>
+                </li>
+                <li>
+                  <a href="/buyTicketsBySubscription">
+                    <i class="fas fa-money-check"></i>
+                    Buy Tickets by Subscription
+                  </a>
+                </li>
+              </ul>
+            </li>
+          </ul>
+          <ul class="nav navbar-nav navbar-right">
+            <li>
+              <a href="/">
+                <i class="fas fa-sign-out-alt"></i>
+                Logout
+              </a>
+            </li>
+          </ul>
+        </div>
+      </nav>
+      <h1>Check Price</h1>
+      <div class="form-group">
+        <label for="originSelect">Origin:</label>
+        <select id="originSelect">
+          <!-- Populate origin stations dynamically using JavaScript -->
+        </select>
+      </div>
+      <div class="form-group">
+        <label for="destinationSelect">Destination:</label>
+        <select id="destinationSelect">
+          <!-- Populate destination stations dynamically using JavaScript -->
+        </select>
+      </div>
+      <button id="checkPriceBtn" class="check-price-btn">Check Price</button>
+      <div class="result-container" id="result"></div>
+      <div class="journey-line"></div>
+    </div>
+  </body>
+</html>

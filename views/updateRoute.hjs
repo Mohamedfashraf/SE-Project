@@ -1,0 +1,175 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <title>Update Routes</title>
+    <link rel="stylesheet" href="/styles/bootstrap.min.css" />
+    <link rel="stylesheet" href="/styles/style.css" />
+    <link
+      rel="stylesheet"
+      href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css"
+    />
+    <link rel="stylesheet" href="/styles/custom-style.css" />
+    <style>
+      /* CSS styles for the update route page */
+      .update-route-form {
+        margin-top: 20px;
+      }
+      .update-route-input {
+        margin-bottom: 10px;
+      }
+      .update-route-button {
+        margin-top: 10px;
+      }
+    </style>
+  </head>
+  <body>
+    <div class="container">
+      <nav class="navbar navbar-inverse">
+        <div class="container-fluid">
+          <div class="navbar-header">
+            <a class="navbar-brand" href="/dashboard">Dashboard</a>
+          </div>
+          <ul class="nav navbar-nav">
+            <li class="active">
+              <a href="/dashboard"><i class="fas fa-home"></i> Home</a>
+            </li>
+            <li>
+              <a href="/stations"><i class="fas fa-subway"></i> Station</a>
+            </li>
+            <li class="dropdown">
+              <a
+                href="#"
+                class="dropdown-toggle"
+                data-toggle="dropdown"
+                role="button"
+                aria-haspopup="true"
+                aria-expanded="false"
+              >
+                <i class="fas fa-shopping-cart"></i>
+                Shop
+                <span class="caret"></span>
+              </a>
+              <ul class="dropdown-menu">
+                <li>
+                  <a href="/tickets"
+                    ><i class="fas fa-ticket-alt"></i> Tickets</a
+                  >
+                </li>
+                <!-- Add other shop-related options here -->
+              </ul>
+            </li>
+          </ul>
+          <ul class="nav navbar-nav navbar-right">
+            <li>
+              <a href="/"><i class="fas fa-sign-out-alt"></i> Logout</a>
+            </li>
+          </ul>
+        </div>
+      </nav>
+
+      <h1 class="page-title">Update Routes</h1>
+
+      <table id="routes-table" class="table table-striped">
+        <thead>
+          <tr>
+            <th>Route ID</th>
+            <th>Route Name</th>
+            <th>From Station Name</th>
+            <th>To Station Name</th>
+          </tr>
+        </thead>
+        <tbody></tbody>
+      </table>
+
+      <form class="update-route-form">
+        <div class="form-group">
+          <label for="route-id">Route ID:</label>
+          <input
+            type="text"
+            class="form-control update-route-input"
+            id="route-id"
+            placeholder="Enter the route ID"
+          />
+        </div>
+        <div class="form-group">
+          <label for="route-name">Route Name:</label>
+          <input
+            type="text"
+            class="form-control update-route-input"
+            id="route-name"
+            placeholder="Enter the new route name"
+          />
+        </div>
+        <button type="button" class="btn btn-primary update-route-button">
+          Update Route
+        </button>
+      </form>
+    </div>
+
+    <script src="/js/jquery-2.2.0.min.js" type="text/javascript"></script>
+    <script src="/js/bootstrap.min.js" type="text/javascript"></script>
+    <script>
+      $(document).ready(function () {
+        // Retrieve and populate routes table
+        $.ajax({
+          url: "/api/v1/routes",
+          type: "GET",
+          success: function (routes) {
+            populateRoutesTable(routes);
+          },
+          error: function (xhr, status, error) {
+            console.log("Error retrieving routes:", error);
+            // Handle the error appropriately
+            alert("Error retrieving routes. Please try again.");
+          },
+        });
+
+        $(".update-route-button").click(function () {
+          var newRouteName = $("#route-name").val();
+          var routeId = $("#route-id").val();
+
+          if (newRouteName && routeId) {
+            updateRoute(routeId, newRouteName);
+          } else {
+            alert("Route ID and Name are required.");
+          }
+        });
+
+        function updateRoute(routeId, newRouteName) {
+          $.ajax({
+            url: "/api/v1/route/" + routeId,
+            type: "PUT",
+            data: JSON.stringify({ routeName: newRouteName }),
+            contentType: "application/json",
+            success: function (response) {
+              console.log(response.message);
+              // Perform any additional actions after a successful update
+              alert("Route updated successfully. New name: " + newRouteName);
+            },
+            error: function (xhr, status, error) {
+              console.log("Error updating route:", error);
+              // Handle the error appropriately
+              alert("Error updating route. Please try again.");
+            },
+          });
+        }
+
+        function populateRoutesTable(routes) {
+          var tbody = $("#routes-table tbody");
+          tbody.empty();
+
+          routes.forEach(function (route) {
+            var row = "<tr>";
+            row += "<td>" + route.id + "</td>";
+            row += "<td>" + route.routename + "</td>";
+            row += "<td>" + route.fromstationname + "</td>";
+            row += "<td>" + route.tostationname + "</td>";
+            row += "</tr>";
+
+            tbody.append(row);
+          });
+        }
+      });
+    </script>
+  </body>
+</html>

@@ -1,0 +1,216 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <title>User Requests</title>
+    <link rel="stylesheet" href="/styles/bootstrap.min.css" />
+    <link rel="stylesheet" href="/styles/style.css" />
+    <link
+      rel="stylesheet"
+      href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css"
+    />
+    <link rel="stylesheet" href="/styles/custom-style.css" />
+    <script src="/js/jquery-2.2.0.min.js" type="text/javascript"></script>
+    <script src="/js/bootstrap.min.js" type="text/javascript"></script>
+    <style>
+      .table-container {
+        margin-top: 20px;
+      }
+
+      h1 {
+        margin-top: 20px;
+      }
+
+      .table-header {
+        font-weight: bold;
+        background-color: #f8f9fa;
+      }
+
+      .no-data {
+        text-align: center;
+        margin-top: 20px;
+      }
+    </style>
+    <script>
+      $(document).ready(function () {
+        // Function to retrieve and display refund requests of the user
+        function getRefundRequests() {
+          $.ajax({
+            url: "/api/v1/refundUser",
+            method: "GET",
+            success: function (data) {
+              var refundTable =
+                '<div class="table-container"><h2>Refund Requests</h2>';
+
+              if (data.length > 0) {
+                refundTable +=
+                  '<table class="table table-striped"><thead class="table-header"><tr><th>ID</th><th>Status</th><th>User ID</th><th>Refund Amount</th><th>Ticket ID</th></tr></thead><tbody>';
+
+                for (var i = 0; i < data.length; i++) {
+                  var refundRequest = data[i];
+                  refundTable +=
+                    "<tr><td>" +
+                    refundRequest.id +
+                    "</td><td>" +
+                    refundRequest.status +
+                    "</td><td>" +
+                    refundRequest.userid +
+                    "</td><td>" +
+                    refundRequest.refundamount +
+                    "</td><td>" +
+                    refundRequest.ticketid +
+                    "</td></tr>";
+                }
+
+                refundTable += "</tbody></table></div>";
+              } else {
+                refundTable +=
+                  '<div class="no-data">No refund requests found.</div></div>';
+              }
+
+              $("#refundRequestsTable").html(refundTable);
+            },
+            error: function (err) {
+              console.log(err);
+              $("#refundRequestsTable").html(
+                '<div class="no-data">Error retrieving refund requests.</div>'
+              );
+            },
+          });
+        }
+
+        // Function to retrieve and display senior requests of the user
+        function getSeniorRequests() {
+          $.ajax({
+            url: "/api/v1/viewSenior",
+            method: "GET",
+            success: function (data) {
+              var seniorTable =
+                '<div class="table-container"><h2>Senior Requests</h2>';
+
+              if (data.length > 0) {
+                seniorTable +=
+                  '<table class="table table-striped"><thead class="table-header"><tr><th>ID</th><th>Status</th><th>User ID</th><th>National ID</th></tr></thead><tbody>';
+
+                for (var i = 0; i < data.length; i++) {
+                  var seniorRequest = data[i];
+                  seniorTable +=
+                    "<tr><td>" +
+                    seniorRequest.id +
+                    "</td><td>" +
+                    seniorRequest.status +
+                    "</td><td>" +
+                    seniorRequest.userid +
+                    "</td><td>" +
+                    seniorRequest.nationalid +
+                    "</td></tr>";
+                }
+
+                seniorTable += "</tbody></table></div>";
+              } else {
+                seniorTable +=
+                  '<div class="no-data">No senior requests found.</div></div>';
+              }
+
+              $("#seniorRequestsTable").html(seniorTable);
+            },
+            error: function (err) {
+              console.log(err);
+              $("#seniorRequestsTable").html(
+                '<div class="no-data">Error retrieving senior requests.</div>'
+              );
+            },
+          });
+        }
+
+        // Call the functions to retrieve and display data
+        getRefundRequests();
+        getSeniorRequests();
+      });
+    </script>
+  </head>
+  <body>
+    <div class="container" style="margin-top: 20px"></div>
+    <div class="container">
+      <nav class="navbar navbar-inverse">
+        <div class="container-fluid">
+          <div class="navbar-header">
+            <a class="navbar-brand" href="/dashboard">Dashboard</a>
+          </div>
+          <ul class="nav navbar-nav">
+            <li class="active">
+              <a href="/dashboard">
+                <i class="fas fa-home"></i>
+                Home
+              </a>
+            </li>
+            <li>
+              <a href="/stations">
+                <i class="fas fa-subway"></i>
+                Stations
+              </a>
+            </li>
+            <li>
+              <a href="/routes">
+                <i class="fas fa-route"></i>
+                Routes
+              </a>
+            </li>
+            <li class="dropdown">
+              <a
+                href="#"
+                class="dropdown-toggle"
+                data-toggle="dropdown"
+                role="button"
+                aria-haspopup="true"
+                aria-expanded="false"
+              >
+                <i class="fas fa-shopping-cart"></i>
+                Shop
+                <span class="caret"></span>
+              </a>
+              <ul class="dropdown-menu">
+                <li>
+                  <a href="/checkPrice">
+                    <i class="fas fa-calculator"></i>
+                    Check Price
+                  </a>
+                </li>
+                <li>
+                  <a href="/tickets">
+                    <i class="fas fa-ticket-alt"></i>
+                    Tickets
+                  </a>
+                </li>
+                <li>
+                  <a href="/subscriptions">
+                    <i class="fas fa-calendar-alt"></i>
+                    Subscriptions
+                  </a>
+                </li>
+                <li>
+                  <a href="/buyTicketsBySubscription">
+                    <i class="fas fa-money-check"></i>
+                    Buy Tickets by Subscription
+                  </a>
+                </li>
+              </ul>
+            </li>
+          </ul>
+          <ul class="nav navbar-nav navbar-right">
+            <li>
+              <a href="/">
+                <i class="fas fa-sign-out-alt"></i>
+                Logout
+              </a>
+            </li>
+          </ul>
+        </div>
+      </nav>
+      <div class="container">
+        <h1>Check Requests</h1>
+        <div id="refundRequestsTable"></div>
+        <div id="seniorRequestsTable"></div>
+      </div>
+    </div>
+  </body>
+</html>

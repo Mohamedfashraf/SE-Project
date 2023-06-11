@@ -1,0 +1,196 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <title>Senior Request</title>
+    <link rel="stylesheet" href="/styles/bootstrap.min.css" />
+    <link rel="stylesheet" href="/styles/style.css" />
+    <link
+      rel="stylesheet"
+      href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css"
+    />
+    <style>
+      body {
+        margin: 20px;
+      }
+
+      h1 {
+        margin-bottom: 20px;
+      }
+
+      .form-group {
+        margin-bottom: 15px;
+      }
+
+      #requestResult {
+        margin-top: 20px;
+        font-weight: bold;
+        padding: 10px;
+        display: none;
+      }
+
+      .success-message {
+        background-color: rgba(76, 175, 80, 0.8);
+        color: #fff;
+      }
+
+      .already-requested-message {
+        background-color: rgba(255, 235, 59, 0.8);
+        color: #000;
+      }
+
+      .failed-message {
+        background-color: rgba(244, 67, 54, 0.8);
+        color: #fff;
+      }
+    </style>
+    <script src="/js/jquery-2.2.0.min.js" type="text/javascript"></script>
+    <script src="/js/bootstrap.min.js" type="text/javascript"></script>
+  </head>
+  <body>
+    <div class="container">
+      <nav class="navbar navbar-inverse">
+        <div class="container-fluid">
+          <div class="navbar-header">
+            <a class="navbar-brand" href="/dashboard">Dashboard</a>
+          </div>
+          <ul class="nav navbar-nav">
+            <li class="active">
+              <a href="/dashboard">
+                <i class="fas fa-home"></i>
+                Home
+              </a>
+            </li>
+            <li>
+              <a href="/stations">
+                <i class="fas fa-subway"></i>
+                Stations
+              </a>
+            </li>
+            <li>
+              <a href="/routes">
+                <i class="fas fa-route"></i>
+                Routes
+              </a>
+            </li>
+            <li class="dropdown">
+              <a
+                href="#"
+                class="dropdown-toggle"
+                data-toggle="dropdown"
+                role="button"
+                aria-haspopup="true"
+                aria-expanded="false"
+              >
+                <i class="fas fa-shopping-cart"></i>
+                Shop
+                <span class="caret"></span>
+              </a>
+              <ul class="dropdown-menu">
+                <li>
+                  <a href="/checkPrice">
+                    <i class="fas fa-calculator"></i>
+                    Check Price
+                  </a>
+                </li>
+                <li>
+                  <a href="/tickets">
+                    <i class="fas fa-ticket-alt"></i>
+                    Tickets
+                  </a>
+                </li>
+                <li>
+                  <a href="/subscriptions">
+                    <i class="fas fa-calendar-alt"></i>
+                    Subscriptions
+                  </a>
+                </li>
+                <li>
+                  <a href="/buyTicketsBySubscription">
+                    <i class="fas fa-money-check"></i>
+                    Buy Tickets by Subscription
+                  </a>
+                </li>
+              </ul>
+            </li>
+          </ul>
+          <ul class="nav navbar-nav navbar-right">
+            <li>
+              <a href="/">
+                <i class="fas fa-sign-out-alt"></i>
+                Logout
+              </a>
+            </li>
+          </ul>
+        </div>
+      </nav>
+      <h1>Senior Request Page</h1>
+
+      <form id="requestForm">
+        <div class="form-group">
+          <label for="nationalId">National ID:</label>
+          <input
+            type="text"
+            id="nationalId"
+            name="nationalId"
+            class="form-control"
+            placeholder="National ID"
+            required
+          />
+        </div>
+        <button type="submit" class="btn btn-primary">Submit Request</button>
+      </form>
+
+      <p id="requestResult" class="mt-3"></p>
+
+      <script>
+        $(document).ready(function () {
+          $("#requestForm").on("submit", function (event) {
+            event.preventDefault();
+            const nationalId = $("#nationalId").val();
+
+            const request = {
+              nationalId: nationalId,
+            };
+
+            $.ajax({
+              type: "POST",
+              url: "/api/v1/senior/request",
+              data: JSON.stringify(request),
+              contentType: "application/json",
+              success: function (response) {
+                $("#requestResult")
+                  .removeClass()
+                  .addClass("success-message")
+                  .text(response)
+                  .fadeIn();
+
+                setTimeout(function () {
+                  $("#requestResult").fadeOut();
+                }, 5000);
+              },
+              error: function (xhr) {
+                if (xhr.status === 409) {
+                  $("#requestResult")
+                    .removeClass()
+                    .addClass("already-requested-message")
+                    .text("You have already made a senior request.")
+                    .fadeIn();
+                } else {
+                  $("#requestResult")
+                    .removeClass()
+                    .addClass("failed-message")
+                    .text(xhr.responseText)
+                    .fadeIn();
+                }
+
+                setTimeout(function () {
+                  $("#requestResult").fadeOut();
+                }, 5000);
+              },
+            });
+          });
+        });
+      </script>
+    </div>
+  </body>
+</html>

@@ -1,0 +1,206 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <title>Manage Senior Requests</title>
+    <link rel="stylesheet" href="/styles/bootstrap.min.css" />
+    <link rel="stylesheet" href="/styles/style.css" />
+    <link
+      rel="stylesheet"
+      href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css"
+    />
+    <link rel="stylesheet" href="/styles/custom-style.css" />
+    <script src="/js/jquery-2.2.0.min.js" type="text/javascript"></script>
+    <script src="/js/bootstrap.min.js" type="text/javascript"></script>
+    <script>
+      $(document).ready(function () {
+        // Fetch the senior requests
+        $.ajax({
+          url: "/api/v1/seniorRequests",
+          method: "GET",
+          success: function (data) {
+            // Populate the table with the received data
+            var table = $("#senior-requests-table");
+            $.each(data, function (index, request) {
+              var row = $("<tr>").attr("data-request-id", request.id);
+              row.append($("<td>").text(request.id));
+              row.append(
+                $("<td>").attr("data-field", "status").text(request.status)
+              );
+              row.append($("<td>").text(request.userid));
+              row.append($("<td>").text(request.nationalid));
+              row.append(
+                $("<td>").html(
+                  '<button class="btn btn-primary" onclick="updateSeniorRequestStatus(' +
+                    request.id +
+                    ', \'accepted\')">Accept</button> <button class="btn btn-danger" onclick="updateSeniorRequestStatus(' +
+                    request.id +
+                    ", 'rejected')\">Reject</button>"
+                )
+              );
+              table.append(row);
+            });
+          },
+          error: function () {
+            console.error("Error retrieving senior requests.");
+          },
+        });
+      });
+
+      // Function to update the status of a senior request
+      function updateSeniorRequestStatus(requestId, seniorStatus) {
+        $.ajax({
+          url: "/api/v1/requests/senior/" + requestId,
+          method: "PUT",
+          data: JSON.stringify({ seniorStatus: seniorStatus }),
+          contentType: "application/json",
+          success: function (data) {
+            if (seniorStatus === "accepted") {
+              showMessage("Senior request accepted", 3000);
+            } else if (seniorStatus === "rejected") {
+              showMessage("Senior request rejected", 3000);
+            }
+
+            // Update the status in the table row
+            var statusCell = $("#senior-requests-table")
+              .find("tr[data-request-id='" + requestId + "']")
+              .find("td[data-field='status']");
+            statusCell.text(seniorStatus);
+          },
+          error: function (xhr, status, error) {
+            var errorMessage =
+              xhr.responseJSON && xhr.responseJSON.message
+                ? xhr.responseJSON.message
+                : "Error updating senior request status.";
+
+            if (
+              errorMessage === "Senior request already accepted" ||
+              errorMessage === "Senior request already rejected"
+            ) {
+              showMessage(errorMessage, 3000);
+            } else {
+              console.error(errorMessage);
+            }
+          },
+        });
+      }
+
+      // Function to show a message for a specified duration
+      function showMessage(message, duration) {
+        var messageElement = $("<div>", {
+          class: "alert alert-success",
+          role: "alert",
+          text: message,
+        });
+        $("#message-container").append(messageElement);
+        setTimeout(function () {
+          messageElement.remove();
+        }, duration);
+      }
+    </script>
+    <style></style>
+  </head>
+  <body>
+    <div class="container" style="margin-top: 20px">
+      <div>
+        <nav class="navbar navbar-inverse">
+          <div class="container-fluid">
+            <div class="navbar-header">
+              <a class="navbar-brand" href="/dashboard">Dashboard</a>
+            </div>
+            <ul class="nav navbar-nav">
+              <li class="active">
+                <a href="/dashboard">
+                  <i class="fas fa-home"></i>
+                  Home
+                </a>
+              </li>
+              <li>
+                <a href="/stations">
+                  <i class="fas fa-subway"></i>
+                  Stations
+                </a>
+              </li>
+              <li>
+                <a href="/routes">
+                  <i class="fas fa-route"></i>
+                  Routes
+                </a>
+              </li>
+              <li class="dropdown">
+                <a
+                  href="#"
+                  class="dropdown-toggle"
+                  data-toggle="dropdown"
+                  role="button"
+                  aria-haspopup="true"
+                  aria-expanded="false"
+                >
+                  <i class="fas fa-shopping-cart"></i>
+                  Shop
+                  <span class="caret"></span>
+                </a>
+                <ul class="dropdown-menu">
+                  <li>
+                    <a href="/checkPrice">
+                      <i class="fas fa-calculator"></i>
+                      Check Price
+                    </a>
+                  </li>
+                  <li>
+                    <a href="/tickets">
+                      <i class="fas fa-ticket-alt"></i>
+                      Tickets
+                    </a>
+                  </li>
+                  <li>
+                    <a href="/subscriptions">
+                      <i class="fas fa-calendar-alt"></i>
+                      Subscriptions
+                    </a>
+                  </li>
+                  <li>
+                    <a href="/buyTicketsBySubscription">
+                      <i class="fas fa-money-check"></i>
+                      Buy Tickets by Subscription
+                    </a>
+                  </li>
+                </ul>
+              </li>
+            </ul>
+            <ul class="nav navbar-nav navbar-right">
+              <li>
+                <a href="/">
+                  <i class="fas fa-sign-out-alt"></i>
+                  Logout
+                </a>
+              </li>
+            </ul>
+          </div>
+        </nav>
+      </div>
+      <div class="row">
+        <div class="col-md-12">
+          <div id="user-card" class="user-info-card"></div>
+
+          <h1>Manage Senior Requests</h1>
+          <table id="senior-requests-table" class="table table-striped">
+            <thead>
+              <tr>
+                <th>ID</th>
+                <th>Status</th>
+                <th>User ID</th>
+                <th>National ID</th>
+                <th>Action</th>
+              </tr>
+            </thead>
+            <tbody>
+              <!-- Table rows will be dynamically populated here -->
+            </tbody>
+          </table>
+
+          <div id="message-container"></div>
+        </div>
+      </div>
+    </div>
+  </body>
+</html>

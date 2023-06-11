@@ -1,0 +1,267 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <title>Manage Refund Requests</title>
+    <link rel="stylesheet" href="/styles/bootstrap.min.css" />
+    <link rel="stylesheet" href="/styles/style.css" />
+    <link
+      rel="stylesheet"
+      href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css"
+    />
+    <link rel="stylesheet" href="/styles/custom-style.css" />
+    <script src="/js/jquery-2.2.0.min.js" type="text/javascript"></script>
+    <script src="/js/bootstrap.min.js" type="text/javascript"></script>
+    <script>
+      $(document).ready(function () {
+        // Function to fetch refund requests and populate the table
+        function fetchRefundRequests() {
+          $.ajax({
+            url: "/api/v1/refundRequests",
+            type: "GET",
+            success: function (data) {
+              // Clear the existing table rows
+              $("#refundTable tbody").empty();
+
+              // Add table title
+              $("#tableTitle").text("Manage Refund Requests");
+
+              if (data.length === 0) {
+                // Display message when no refund requests are available
+                var noRequestsMessage = `<tr><td colspan="6">No refund requests found.</td></tr>`;
+                $("#refundTable tbody").append(noRequestsMessage);
+                return;
+              }
+
+              // Populate the table with data
+              data.forEach(function (request) {
+                var acceptButton = "";
+                var rejectButton = `<button class="btn btn-danger reject-btn" data-requestid="${request.id}">Reject</button>`;
+
+                if (request.status === "accepted") {
+                  acceptButton = `<button class="btn btn-primary accept-btn" data-requestid="${request.id}" disabled>Accepted</button>`;
+                  rejectButton = "";
+                } else if (request.status === "rejected") {
+                  acceptButton = `<button class="btn btn-primary accept-btn" data-requestid="${request.id}" disabled>Rejected</button>`;
+                  rejectButton = "";
+                } else if (request.status === "pending") {
+                  acceptButton = `<button class="btn btn-primary accept-btn" data-requestid="${request.id}">Accept</button>`;
+                } else {
+                  acceptButton = `<button class="btn btn-primary accept-btn" data-requestid="${request.id}" disabled>Cannot Accept</button>`;
+                }
+
+                var row = `<tr>
+                  <td>${request.id}</td>
+                  <td>${request.status}</td>
+                  <td>${request.userid}</td>
+                  <td>${request.refundamount}</td>
+                  <td>${request.ticketid}</td>
+                  <td>
+                    ${acceptButton}
+                    ${rejectButton}
+                  </td>
+                </tr>`;
+                $("#refundTable tbody").append(row);
+              });
+
+              // Add event listeners for accept and reject buttons
+              $(".accept-btn").click(function () {
+                var requestId = $(this).data("requestid");
+                updateRefundRequest(requestId, "accepted");
+              });
+
+              $(".reject-btn").click(function () {
+                var requestId = $(this).data("requestid");
+                updateRefundRequest(requestId, "rejected");
+              });
+            },
+            error: function (error) {
+              console.error("Error retrieving refund requests:", error);
+            },
+          });
+        }
+
+        // Function to update refund request status
+        function updateRefundRequest(requestId, status) {
+          $.ajax({
+            url: `/api/v1/requests/refunds/${requestId}`,
+            type: "PUT",
+            data: { refundStatus: status },
+            success: function (response) {
+              console.log(response);
+              // Show success message
+              showMessage("Refund request updated successfully", "success");
+              // Refresh refund requests after update
+              fetchRefundRequests();
+            },
+            error: function (error) {
+              console.error("Error updating refund request:", error);
+            },
+          });
+        }
+
+        // Function to show message
+        function showMessage(message, type) {
+          var messageElement = $("<div>", {
+            class: `message ${type}`,
+            text: message,
+          });
+          $("body").append(messageElement);
+
+          // Remove message after 3 seconds
+          setTimeout(function () {
+            messageElement.remove();
+          }, 3000);
+        }
+
+        // Fetch refund requests on page load
+        fetchRefundRequests();
+      });
+    </script>
+
+    <style>
+      .container {
+        margin-top: 20px;
+      }
+      .table-title {
+        margin-bottom: 20px;
+        font-size: 24px;
+        font-weight: bold;
+      }
+      .message {
+        position: fixed;
+        top: 50px;
+        left: 50%;
+        transform: translateX(-50%);
+        background-color: rgba(0, 128, 0, 0.8);
+        padding: 10px;
+        border-radius: 5px;
+        color: #fff;
+        z-index: 9999;
+      }
+      .message.success {
+        background-color: rgba(0, 128, 0, 0.8);
+      }
+
+      /* Custom styles for accept button */
+      .btn.btn-primary.accept-btn {
+        background-color: blue;
+        border-color: blue;
+      }
+
+      /* Hide user options dropdown */
+      .dropdown-menu.user-options {
+        display: none;
+      }
+    </style>
+  </head>
+  <body>
+    <div class="container">
+      <div>
+        <nav class="navbar navbar-inverse">
+          <div class="container-fluid">
+            <div class="navbar-header">
+              <a class="navbar-brand" href="/dashboard">Dashboard</a>
+            </div>
+            <ul class="nav navbar-nav">
+              <li class="active">
+                <a href="/dashboard">
+                  <i class="fas fa-home"></i>
+                  Home
+                </a>
+              </li>
+              <li>
+                <a href="/stations">
+                  <i class="fas fa-subway"></i>
+                  Stations
+                </a>
+              </li>
+              <li>
+                <a href="/routes">
+                  <i class="fas fa-route"></i>
+                  Routes
+                </a>
+              </li>
+              <li class="dropdown">
+                <a
+                  href="#"
+                  class="dropdown-toggle"
+                  data-toggle="dropdown"
+                  role="button"
+                  aria-haspopup="true"
+                  aria-expanded="false"
+                >
+                  <i class="fas fa-shopping-cart"></i>
+                  Shop
+                  <span class="caret"></span>
+                </a>
+                <ul class="dropdown-menu">
+                  <li>
+                    <a href="/checkPrice">
+                      <i class="fas fa-calculator"></i>
+                      Check Price
+                    </a>
+                  </li>
+                  <li>
+                    <a href="/tickets">
+                      <i class="fas fa-ticket-alt"></i>
+                      Tickets
+                    </a>
+                  </li>
+                  <li>
+                    <a href="/subscriptions">
+                      <i class="fas fa-calendar-alt"></i>
+                      Subscriptions
+                    </a>
+                  </li>
+                  <li>
+                    <a href="/buyTicketsBySubscription">
+                      <i class="fas fa-money-check"></i>
+                      Buy Tickets by Subscription
+                    </a>
+                  </li>
+                </ul>
+              </li>
+            </ul>
+            <ul class="nav navbar-nav navbar-right">
+              <li>
+                <a href="/">
+                  <i class="fas fa-sign-out-alt"></i>
+                  Logout
+                </a>
+              </li>
+            </ul>
+          </div>
+        </nav>
+      </div>
+      <div class="row">
+        <div class="col-md-12">
+          <div class="panel panel-default">
+            <div class="panel-heading">
+              <h3 class="panel-title">
+                <i class="fa fa-list"></i> Refund Requests
+              </h3>
+            </div>
+            <div class="panel-body">
+              <div class="table-responsive">
+                <h2 id="tableTitle" class="table-title"></h2>
+                <table id="refundTable" class="table table-striped">
+                  <thead>
+                    <tr>
+                      <th>Request ID</th>
+                      <th>Status</th>
+                      <th>User ID</th>
+                      <th>Refund Amount</th>
+                      <th>Ticket ID</th>
+                      <th>Action</th>
+                    </tr>
+                  </thead>
+                  <tbody></tbody>
+                </table>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </body>
+</html>

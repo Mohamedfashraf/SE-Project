@@ -1,0 +1,203 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <title>Delete Route</title>
+    <link rel="stylesheet" href="/styles/bootstrap.min.css" />
+    <link rel="stylesheet" href="/styles/style.css" />
+    <link
+      rel="stylesheet"
+      href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css"
+    />
+    <link rel="stylesheet" href="/styles/custom-style.css" />
+    <style>
+      /* CSS styles for the delete route page */
+      .delete-route-form {
+        margin-top: 20px;
+      }
+      .delete-route-input {
+        margin-bottom: 10px;
+      }
+      .delete-route-button {
+        margin-top: 10px;
+      }
+    </style>
+  </head>
+  <body>
+    <div class="container" style="margin-top: 20px"></div>
+    <div class="container">
+      <nav class="navbar navbar-inverse">
+        <div class="container-fluid">
+          <div class="navbar-header">
+            <a class="navbar-brand" href="/dashboard">Dashboard</a>
+          </div>
+          <ul class="nav navbar-nav">
+            <li class="active">
+              <a href="/dashboard">
+                <i class="fas fa-home"></i>
+                Home
+              </a>
+            </li>
+            <li>
+              <a href="/stations">
+                <i class="fas fa-subway"></i>
+                Stations
+              </a>
+            </li>
+            <li>
+              <a href="/routes">
+                <i class="fas fa-route"></i>
+                Routes
+              </a>
+            </li>
+            <li class="dropdown">
+              <a
+                href="#"
+                class="dropdown-toggle"
+                data-toggle="dropdown"
+                role="button"
+                aria-haspopup="true"
+                aria-expanded="false"
+              >
+                <i class="fas fa-shopping-cart"></i>
+                Shop
+                <span class="caret"></span>
+              </a>
+              <ul class="dropdown-menu">
+                <li>
+                  <a href="/checkPrice">
+                    <i class="fas fa-calculator"></i>
+                    Check Price
+                  </a>
+                </li>
+                <li>
+                  <a href="/tickets">
+                    <i class="fas fa-ticket-alt"></i>
+                    Tickets
+                  </a>
+                </li>
+                <li>
+                  <a href="/subscriptions">
+                    <i class="fas fa-calendar-alt"></i>
+                    Subscriptions
+                  </a>
+                </li>
+                <li>
+                  <a href="/buyTicketsBySubscription">
+                    <i class="fas fa-money-check"></i>
+                    Buy Tickets by Subscription
+                  </a>
+                </li>
+              </ul>
+            </li>
+          </ul>
+          <ul class="nav navbar-nav navbar-right">
+            <li>
+              <a href="/">
+                <i class="fas fa-sign-out-alt"></i>
+                Logout
+              </a>
+            </li>
+          </ul>
+        </div>
+      </nav>
+
+      <h1 class="page-title">Delete Route</h1>
+      <form class="delete-route-form">
+        <div class="form-group">
+          <label for="route-id">Route ID:</label>
+          <input
+            type="text"
+            class="form-control delete-route-input"
+            id="route-id"
+            placeholder="Enter the route ID"
+          />
+        </div>
+        <button type="button" class="btn btn-danger delete-route-button">
+          Delete Route
+        </button>
+      </form>
+
+      <h2 class="page-title">Routes</h2>
+      <table class="table table-striped" id="routes-table">
+        <thead>
+          <tr>
+            <th>Route ID</th>
+            <th>Route Name</th>
+            <th>From Station</th>
+            <th>To Station</th>
+          </tr>
+        </thead>
+        <tbody></tbody>
+      </table>
+    </div>
+
+    <script src="/js/jquery-2.2.0.min.js" type="text/javascript"></script>
+    <script src="/js/bootstrap.min.js" type="text/javascript"></script>
+    <script>
+      $(document).ready(function () {
+        $(".delete-route-button").click(function () {
+          var routeId = $("#route-id").val();
+
+          if (routeId) {
+            deleteRoute(routeId);
+          } else {
+            alert("Route ID is required.");
+          }
+        });
+
+        loadRoutesTable();
+
+        function loadRoutesTable() {
+          $.ajax({
+            url: "/api/v1/routes",
+            type: "GET",
+            success: function (routes) {
+              var tableBody = $("#routes-table tbody");
+              tableBody.empty();
+
+              routes.forEach(function (route) {
+                var row =
+                  "<tr>" +
+                  "<td>" +
+                  route.id +
+                  "</td>" +
+                  "<td>" +
+                  route.routename +
+                  "</td>" +
+                  "<td>" +
+                  route.fromstationname +
+                  "</td>" +
+                  "<td>" +
+                  route.tostationname +
+                  "</td>" +
+                  "</tr>";
+
+                tableBody.append(row);
+              });
+            },
+            error: function (xhr, status, error) {
+              console.log("Error retrieving routes:", error);
+              alert("Error retrieving routes. Please try again.");
+            },
+          });
+        }
+
+        function deleteRoute(routeId) {
+          $.ajax({
+            url: "/api/v1/route/" + routeId,
+            type: "DELETE",
+            success: function (response) {
+              console.log(response.message);
+              alert("Route deleted successfully.");
+              loadRoutesTable();
+            },
+            error: function (xhr, status, error) {
+              console.log("Error deleting route:", error);
+              alert("Error deleting route. Please try again.");
+            },
+          });
+        }
+      });
+    </script>
+  </body>
+</html>

@@ -1,0 +1,148 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <title>Login</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/twitter-bootstrap/5.0.2/css/bootstrap.min.css" />
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/animate.css/4.1.1/animate.min.css" />
+    <style>
+      body {
+        background-image: url('images/metrobackground1.jpeg');
+        background-repeat: no-repeat;
+        background-size: cover;
+        background-color: #f5f5f5;
+      }
+      .center {
+        text-align: center;
+        margin-top: 50px;
+      }
+      .login-form {
+        max-width: 400px;
+        margin: 0 auto;
+        margin-top: 50px;
+        padding: 20px;
+        background-color: rgba(255, 255, 255, 0.8);
+        border-radius: 5px;
+        box-shadow: 0px 0px 10px rgba(0, 0, 0, 0.1);
+        animation-duration: 1s;
+      }
+      .login-form .form-group {
+        margin-bottom: 20px;
+      }
+      .login-form label {
+        font-weight: bold;
+      }
+      .login-title {
+        font-size: 24px;
+        color: #333;
+        margin-bottom: 30px;
+        text-transform: uppercase;
+        letter-spacing: 2px;
+      }
+      .login-icon {
+        font-size: 60px;
+        color: #333;
+        margin-bottom: 20px;
+      }
+      .login-btn {
+        background-color: #f9ad02;
+        border-color: #f9ad02;
+        color: #fff;
+        transition: background-color 0.3s ease-in-out;
+      }
+      .login-btn:hover {
+        background-color: #ff9900;
+        border-color: #ff9900;
+        color: #fff;
+      }
+      .show-password-btn {
+        position: absolute;
+        top: 50%;
+        right: 10px;
+        transform: translateY(-50%);
+        background-color: transparent;
+        border: none;
+        outline: none;
+        cursor: pointer;
+        z-index: 2;
+      }
+      .show-password-icon {
+        font-size: 20px;
+        color: #999;
+        transition: color 0.3s ease-in-out;
+      }
+      .show-password-btn:hover .show-password-icon {
+        color: #333;
+      }
+    </style>
+  </head>
+  <body>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.6.0/jquery.min.js" type="text/javascript"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.0.2/js/bootstrap.bundle.min.js" type="text/javascript"></script>
+    <script>
+      $(document).ready(function () {
+        $("#showPasswordBtn").click(function () {
+          const passwordField = $("#password");
+          const passwordFieldType = passwordField.attr('type');
+          if (passwordFieldType === 'password') {
+            passwordField.attr('type', 'text');
+            $(this).addClass('password-showing');
+          } else {
+            passwordField.attr('type', 'password');
+            $(this).removeClass('password-showing');
+          }
+        });
+        
+        $("#loginForm").submit(function (event) {
+          event.preventDefault();
+          const email = $("#email").val();
+          const password = $("#password").val();
+          const data = { email: email, password: password };
+          $.ajax({
+            type: "POST",
+            url: "/api/v1/user/login",
+            data: data,
+            success: function (serverResponse) {
+              if (serverResponse) {
+                location.href = "/dashboard";
+              }
+            },
+            error: function (errorResponse) {
+              if (errorResponse) {
+                alert(`User login error: ${errorResponse.responseText}`);
+              }
+            },
+          });
+        });
+      });
+    </script>
+    <div class="container">
+      <div class="center">
+        <h1 class="animate__animated animate__bounce login-icon"><i class="bi bi-building"></i></h1>
+        <h2 class="animate__animated animate__fadeInUp login-title">Metro Station Login</h2>
+      </div>
+      <div class="login-form animate__animated animate__fadeInUp">
+        <form id="loginForm">
+          <div class="form-group">
+            <label for="email">Email:</label>
+            <input type="text" class="form-control" id="email" name="email" placeholder="Enter your email" value="" />
+          </div>
+          <div class="form-group position-relative">
+            <label for="password">Password:</label>
+            <div class="input-group">
+              <input type="password" class="form-control" id="password" name="password" placeholder="Enter your password" value="" />
+              <button type="button" id="showPasswordBtn" class="show-password-btn">
+                <i class="bi bi-eye show-password-icon"></i>
+              </button>
+            </div>
+          </div>
+          <div class="form-group">
+            <button type="submit" class="btn btn-primary btn-block login-btn">Login</button>
+          </div>
+          <p class="text-center">
+            Need to register? Click <a href="/register">here</a>.
+          </p>
+        </form>
+      </div>
+    </div>
+  </body>
+</html>
